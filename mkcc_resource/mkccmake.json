@@ -1,0 +1,30 @@
+{
+  "name": "New Project",
+  "version": "1.0.0",
+  "entry": "app.mkml",
+
+  "cpp": {
+    "compiler": "g++",
+    "std": "c++17",
+    "optimization": "O1",
+    "include_dirs": [
+    ],
+    "link_dirs": [
+    ],
+    "static_libs": [
+    ],
+    "shared_libs": [
+    ]
+  },
+
+  "window": {
+    "width": 800,
+    "height": 600
+  },
+
+  "resources": [
+    "assets/*"
+  ],
+  "icon": "icon.png",
+  "output": "build/"
+}
