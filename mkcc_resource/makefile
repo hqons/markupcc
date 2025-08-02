@@ -1,2 +1,2 @@
 all:
-    mkcc make
+	mkcc make
