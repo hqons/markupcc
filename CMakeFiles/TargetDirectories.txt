@@ -1,3 +1,0 @@
-/home/h/桌面/markupcc/CMakeFiles/mkcc.dir
-/home/h/桌面/markupcc/CMakeFiles/edit_cache.dir
-/home/h/桌面/markupcc/CMakeFiles/rebuild_cache.dir
