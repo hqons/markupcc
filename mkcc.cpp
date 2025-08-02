@@ -53,7 +53,10 @@ std::string conversion_path(std::string path)
   return result.str();
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 387b21eb3c7939d3a89c0580b25f00bfc977950b
 void copy_file_safe(const std::string& from, const std::string& to)
 {
   try
@@ -149,12 +152,15 @@ void init()
   {
     std::cout << "[mkcc] The mkccmake.json already exists." << std::endl;
   }
+<<<<<<< HEAD
   if (!std::filesystem::exists("makefile"))
   {
     copy_file_safe(ppath(PATH("mkcc_resource", "makefile")),
                    "makefile");
   }
   
+=======
+>>>>>>> 387b21eb3c7939d3a89c0580b25f00bfc977950b
 }
 int make(){
   std::ifstream json_file("mkccmake.json");
