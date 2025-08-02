@@ -53,6 +53,7 @@ std::string conversion_path(std::string path)
   return result.str();
 }
 
+
 void copy_file_safe(const std::string& from, const std::string& to)
 {
   try
