@@ -1,0 +1,2 @@
+all:
+    mkcc make
