@@ -6,10 +6,14 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+#include <cstdlib>
 int windowWidth;
 int windowHeight;
-
+float scrollOffset = 0.f;
+float maxScrollOffset = 0.f;
+const float SCROLL_SPEED = 1.2f;
+bool isScrolling = false;
+sf::RectangleShape scrollBar;
 enum class ElementType
 {
   Paragraph,
@@ -41,9 +45,9 @@ struct Paragraph
   float width;
   float height;
 
-  Paragraph(const std::string& t, const sf::Font& font,
+  Paragraph(const std::string &t, const sf::Font &font,
             unsigned int passedFontSize = 16, float maxWidth = 600.f,
-            const std::string& _id = "", const std::string& _class = "")
+            const std::string &_id = "", const std::string &_class = "")
       : text(t), id(_id), className(_class), width(maxWidth)
   {
     Style style = getStyle();
@@ -60,7 +64,7 @@ struct Paragraph
 
     background.setFillColor(style.backgroundColor);
   }
-  void setText(const std::string& newText)
+  void setText(const std::string &newText)
   {
     text = newText;
     sfText.setString(
@@ -72,18 +76,22 @@ struct Paragraph
     std::string selector = "#" + id;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "." + className;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "p";
-    if (hover && styleSheet.count("p:hover")) return styleSheet["p:hover"];
-    if (styleSheet.count("p")) return styleSheet["p"];
+    if (hover && styleSheet.count("p:hover"))
+      return styleSheet["p:hover"];
+    if (styleSheet.count("p"))
+      return styleSheet["p"];
 
-    return Style();  // 默认
+    return Style(); // 默认
   }
 
   void setPosition(float px, float py)
@@ -93,7 +101,7 @@ struct Paragraph
     sfText.setPosition(px, py);
   }
 
-  void draw(sf::RenderWindow& window)
+  void draw(sf::RenderWindow &window)
   {
     Style style = getStyle(isHovered(window));
     sfText.setFillColor(style.textColor);
@@ -113,14 +121,14 @@ struct Paragraph
     return sfText.getGlobalBounds().height + 10;
   }
 
-  bool isHovered(const sf::RenderWindow& window) const
+  bool isHovered(const sf::RenderWindow &window) const
   {
     auto mousePos = sf::Mouse::getPosition(window);
     return mousePos.x >= x && mousePos.x <= x + width && mousePos.y >= y &&
            mousePos.y <= y + getHeight();
   }
 
-  static std::string wrapText(const std::string& text, const sf::Font& font,
+  static std::string wrapText(const std::string &text, const sf::Font &font,
                               unsigned int fontSize, float maxWidth)
   {
     std::string result;
@@ -157,8 +165,8 @@ struct Button
   float x, y;
   std::function<void()> onClick = nullptr;
 
-  Button(const std::string& text, const sf::Font& font, float px, float py,
-         const std::string& _id = "", const std::string& _class = "")
+  Button(const std::string &text, const sf::Font &font, float px, float py,
+         const std::string &_id = "", const std::string &_class = "")
       : id(_id), className(_class), x(px), y(py)
   {
     Style style = getStyle();
@@ -178,13 +186,14 @@ struct Button
     width = textWidth + style.padding * 2;
 
     // 限制最大宽度为 maxWidth（避免太宽）
-    float maxButtonWidth = windowWidth * 0.8f;  // 可调比例
-    if (width > maxButtonWidth) width = maxButtonWidth;
+    float maxButtonWidth = windowWidth * 0.8f; // 可调比例
+    if (width > maxButtonWidth)
+      width = maxButtonWidth;
 
     height = style.fontSize + style.padding * 2;
     rect.setSize({width, height});
   }
-  void setText(const std::string& text)
+  void setText(const std::string &text)
   {
     label.setString(text);
 
@@ -194,12 +203,13 @@ struct Button
 
     // 限制最大宽度
     float maxButtonWidth = windowWidth * 0.8f;
-    if (width > maxButtonWidth) width = maxButtonWidth;
+    if (width > maxButtonWidth)
+      width = maxButtonWidth;
   }
 
   bool pressed = false;
 
-  void handleEvent(const sf::Event& event, const sf::RenderWindow& window)
+  void handleEvent(const sf::Event &event, const sf::RenderWindow &window)
   {
     if (event.type == sf::Event::MouseButtonPressed &&
         event.mouseButton.button == sf::Mouse::Left && isHovered(window))
@@ -211,7 +221,8 @@ struct Button
         event.mouseButton.button == sf::Mouse::Left && isHovered(window) &&
         pressed)
     {
-      if (onClick) onClick();
+      if (onClick)
+        onClick();
       pressed = false;
     }
 
@@ -227,19 +238,22 @@ struct Button
     std::string selector = "#" + id;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "." + className;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "button";
     if (hover && styleSheet.count("button:hover"))
       return styleSheet["button:hover"];
-    if (styleSheet.count("button")) return styleSheet["button"];
+    if (styleSheet.count("button"))
+      return styleSheet["button"];
 
-    return Style();  // 默认
+    return Style(); // 默认
   }
   void setPosition(float px, float py)
   {
@@ -247,7 +261,7 @@ struct Button
     y = py;
   }
 
-  void draw(sf::RenderWindow& window)
+  void draw(sf::RenderWindow &window)
   {
     bool hover = isHovered(window);
     Style style = getStyle(hover);
@@ -270,7 +284,7 @@ struct Button
     window.draw(label);
   }
 
-  bool isHovered(const sf::RenderWindow& window) const
+  bool isHovered(const sf::RenderWindow &window) const
   {
     auto mousePos = sf::Mouse::getPosition(window);
     return mousePos.x >= x && mousePos.x <= x + width && mousePos.y >= y &&
@@ -287,15 +301,15 @@ struct Element
   ElementType type;
   union
   {
-    Paragraph* paragraph;
-    Button* button;
+    Paragraph *paragraph;
+    Button *button;
   };
 
-  Element(Paragraph* p) : type(ElementType::Paragraph), paragraph(p) {}
-  Element(Button* b) : type(ElementType::Button), button(b) {}
+  Element(Paragraph *p) : type(ElementType::Paragraph), paragraph(p) {}
+  Element(Button *b) : type(ElementType::Button), button(b) {}
 
   // 支持移动（为了 vector 能扩容）
-  Element(Element&& other) noexcept : type(other.type)
+  Element(Element &&other) noexcept : type(other.type)
   {
     if (type == ElementType::Paragraph)
     {
@@ -310,12 +324,14 @@ struct Element
   }
   std::string getId() const
   {
-    if (type == ElementType::Paragraph && paragraph) return paragraph->id;
-    if (type == ElementType::Button && button) return button->id;
+    if (type == ElementType::Paragraph && paragraph)
+      return paragraph->id;
+    if (type == ElementType::Button && button)
+      return button->id;
     return "";
   }
 
-  Element& operator=(Element&& other) noexcept
+  Element &operator=(Element &&other) noexcept
   {
     if (this != &other)
     {
@@ -345,8 +361,8 @@ struct Element
       delete button;
   }
 
-  Element(const Element&) = delete;
-  Element& operator=(const Element&) = delete;
+  Element(const Element &) = delete;
+  Element &operator=(const Element &) = delete;
 };
 
 // 简单容器元素
@@ -357,66 +373,76 @@ struct Div
   std::string id;
   std::string className;
 
-  std::vector<Div> children;  // 允许嵌套 Div
+  std::vector<Div> children; // 允许嵌套 Div
   float x, y;
   float maxWidth;
+  float scrollDragStartY = 0.f;      // 添加这个成员变量
+  float scrollDragStartOffset = 0.f; // 添加这个成员变量
 
-  Div(float px, float py, const std::string& _id = "",
-      const std::string& _class = "")
+  Div(float px, float py, const std::string &_id = "",
+      const std::string &_class = "")
       : x(px), y(py), id(_id), className(_class)
   {
     maxWidth = windowWidth - 2 * px;
   }
 
-  void addParagraph(const std::string& text, const sf::Font& font,
-                    unsigned fontSize = 16, const std::string& id = "",
-                    const std::string& className = "")
+  void addParagraph(const std::string &text, const sf::Font &font,
+                    unsigned fontSize = 16, const std::string &id = "",
+                    const std::string &className = "")
   {
-    Paragraph* p = new Paragraph(text, font, fontSize, maxWidth, id, className);
+    Paragraph *p = new Paragraph(text, font, fontSize, maxWidth, id, className);
     elements.emplace_back(p);
   }
 
-  void addButton(const std::string& text, const sf::Font& font,
-                 const std::string& id = "", const std::string& className = "")
+  void addButton(const std::string &text, const sf::Font &font,
+                 const std::string &id = "", const std::string &className = "")
   {
-    Button* b = new Button(text, font, 0, 0, id, className);
+    Button *b = new Button(text, font, 0, 0, id, className);
     elements.emplace_back(b);
   }
 
-  void addChild(Div&& child)
+  void addChild(Div &&child)
   {
     children.push_back(std::move(child));
   }
-  Element* getElementById(const std::string& searchId)
+  Element *getElementById(const std::string &searchId)
   {
-    for (auto& elem : elements)
+    for (auto &elem : elements)
     {
-      if (elem.getId() == searchId) return &elem;
+      if (elem.getId() == searchId)
+        return &elem;
     }
 
-    for (auto& child : children)
+    for (auto &child : children)
     {
-      Element* found = child.getElementById(searchId);
-      if (found) return found;
+      Element *found = child.getElementById(searchId);
+      if (found)
+        return found;
     }
 
     return nullptr;
   }
-
-  void draw(sf::RenderWindow& window)
+  void draw(sf::RenderWindow &window)
   {
-    float currentY = y;
+    // 创建视图(viewport)来实现滚动效果
+    sf::View view = window.getDefaultView();
+    sf::FloatRect visibleArea(x, y, maxWidth, windowHeight - y); // 移除了scrollOffset
+    view.setViewport(sf::FloatRect(0, 0, 1, 1));
+    view.reset(visibleArea);
+    window.setView(view);
+
+    float currentY = y - scrollOffset; // 改为在这里应用滚动偏移
 
     Style style = getStyle(isHovered(window));
 
     sf::RectangleShape bg;
     float totalHeight = getTotalHeight();
-    bg.setPosition(x, y);
+    bg.setPosition(x, currentY); // 使用调整后的currentY
     bg.setSize({maxWidth, totalHeight});
     bg.setFillColor(style.backgroundColor);
     window.draw(bg);
 
-    for (auto& elem : elements)
+    for (auto &elem : elements)
     {
       if (elem.type == ElementType::Paragraph)
       {
@@ -432,19 +458,56 @@ struct Div
       }
     }
 
-    for (auto& child : children)
+    for (auto &child : children)
     {
       child.x = x + 10;
       child.y = currentY;
       child.draw(window);
       currentY += child.getTotalHeight();
     }
+
+    // 恢复默认视图
+    window.setView(window.getDefaultView());
+
+    // 绘制滚动条
+    drawScrollBar(window, totalHeight);
+  }
+
+  void drawScrollBar(sf::RenderWindow &window, float totalHeight)
+  {
+    // 只有内容超出可视区域时才显示滚动条
+    if (totalHeight <= windowHeight - y)
+    {
+      scrollOffset = 0.f;
+      return;
+    }
+
+    // 计算滚动条参数
+    float scrollBarWidth = 10.f;
+    float scrollBarX = windowWidth - scrollBarWidth - 5.f;
+    float scrollTrackHeight = windowHeight - y;
+
+    // 滚动条轨道
+    sf::RectangleShape scrollTrack(sf::Vector2f(scrollBarWidth, scrollTrackHeight));
+    scrollTrack.setPosition(scrollBarX, y);
+    scrollTrack.setFillColor(sf::Color(200, 200, 200));
+    window.draw(scrollTrack);
+
+    // 滚动条滑块
+    float visibleRatio = (windowHeight - y) / totalHeight;
+    float scrollThumbHeight = scrollTrackHeight * visibleRatio;
+    float scrollThumbY = y + (scrollOffset / totalHeight) * scrollTrackHeight;
+
+    scrollBar.setSize(sf::Vector2f(scrollBarWidth, scrollThumbHeight));
+    scrollBar.setPosition(scrollBarX, scrollThumbY);
+    scrollBar.setFillColor(isScrolling ? sf::Color(100, 100, 100) : sf::Color(150, 150, 150));
+    window.draw(scrollBar);
   }
 
   float getTotalHeight() const
   {
     float h = 0;
-    for (const auto& elem : elements)
+    for (const auto &elem : elements)
     {
       if (elem.type == ElementType::Paragraph)
         h += elem.paragraph->getHeight();
@@ -452,7 +515,8 @@ struct Div
         h += elem.button->getHeight();
     }
 
-    for (const auto& div : children) h += div.getTotalHeight();
+    for (const auto &div : children)
+      h += div.getTotalHeight();
 
     return h;
   }
@@ -462,22 +526,26 @@ struct Div
     std::string selector = "#" + id;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "." + className;
     if (hover && styleSheet.count(selector + ":hover"))
       return styleSheet[selector + ":hover"];
-    if (styleSheet.count(selector)) return styleSheet[selector];
+    if (styleSheet.count(selector))
+      return styleSheet[selector];
 
     selector = "div";
-    if (hover && styleSheet.count("div:hover")) return styleSheet["div:hover"];
-    if (styleSheet.count("div")) return styleSheet["div"];
+    if (hover && styleSheet.count("div:hover"))
+      return styleSheet["div:hover"];
+    if (styleSheet.count("div"))
+      return styleSheet["div"];
 
-    return Style();  // 默认样式
+    return Style(); // 默认样式
   }
-  void handleEvent(const sf::Event& event, const sf::RenderWindow& window)
+  void handleEvent(const sf::Event &event, const sf::RenderWindow &window)
   {
-    for (auto& elem : elements)
+    for (auto &elem : elements)
     {
       if (elem.type == ElementType::Button)
       {
@@ -485,13 +553,69 @@ struct Div
       }
     }
 
-    for (auto& child : children)
+    for (auto &child : children)
     {
       child.handleEvent(event, window);
     }
   }
+  void handleScrollEvent(const sf::Event &event, const sf::RenderWindow &window)
+  {
+    if (event.type == sf::Event::MouseWheelScrolled)
+    {
+      scrollOffset -= event.mouseWheelScroll.delta * SCROLL_SPEED;
+      clampScrollOffset();
+    }
+    else if (event.type == sf::Event::MouseButtonPressed)
+    {
+      if (event.mouseButton.button == sf::Mouse::Left &&
+          scrollBar.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y))
+      {
+        isScrolling = true;
+        scrollDragStartY = event.mouseButton.y;
+        scrollDragStartOffset = scrollOffset;
+      }
+    }
+    else if (event.type == sf::Event::MouseButtonReleased)
+    {
+      if (event.mouseButton.button == sf::Mouse::Left)
+      {
+        isScrolling = false;
+      }
+    }
+    else if (event.type == sf::Event::MouseMoved && isScrolling)
+    {
+      float totalHeight = getTotalHeight();
+      float deltaY = event.mouseMove.y - scrollDragStartY;
 
-  bool isHovered(const sf::RenderWindow& window) const
+      // 计算新的滚动偏移，基于初始偏移和鼠标移动距离
+      scrollOffset = scrollDragStartOffset + (deltaY / (windowHeight - y)) * totalHeight;
+      clampScrollOffset();
+    }
+  }
+
+  void clampScrollOffset()
+  {
+    float totalHeight = getTotalHeight();
+    float maxVisibleHeight = windowHeight - y;
+
+    maxScrollOffset = std::max(0.f, totalHeight - maxVisibleHeight);
+
+    // 直接限制在边界内
+    scrollOffset = std::clamp(scrollOffset, 0.f, maxScrollOffset);
+
+    const float SCROLL_EDGE_DAMPING = 0.3f; // 边界阻尼系数
+    if (scrollOffset < SCROLL_SPEED)
+    {
+      scrollOffset *= SCROLL_EDGE_DAMPING;
+    }
+    else if (scrollOffset > maxScrollOffset - SCROLL_SPEED)
+    {
+      float overshoot = scrollOffset - (maxScrollOffset - SCROLL_SPEED);
+      scrollOffset = maxScrollOffset - overshoot * SCROLL_EDGE_DAMPING;
+    }
+  }
+
+  bool isHovered(const sf::RenderWindow &window) const
   {
     auto mousePos = sf::Mouse::getPosition(window);
     return mousePos.x >= x && mousePos.x <= x + maxWidth && mousePos.y >= y &&
@@ -499,15 +623,22 @@ struct Div
   }
 };
 
-sf::Color parse_css_color(const std::string& val)
+sf::Color parse_css_color(const std::string &val)
 {
-  if (val == "red") return sf::Color::Red;
-  if (val == "green") return sf::Color::Green;
-  if (val == "blue") return sf::Color::Blue;
-  if (val == "black") return sf::Color::Black;
-  if (val == "white") return sf::Color::White;
-  if (val == "gray") return sf::Color(128, 128, 128);
-  if (val == "yellow") return sf::Color::Yellow;
+  if (val == "red")
+    return sf::Color::Red;
+  if (val == "green")
+    return sf::Color::Green;
+  if (val == "blue")
+    return sf::Color::Blue;
+  if (val == "black")
+    return sf::Color::Black;
+  if (val == "white")
+    return sf::Color::White;
+  if (val == "gray")
+    return sf::Color(128, 128, 128);
+  if (val == "yellow")
+    return sf::Color::Yellow;
 
   // 支持 #RRGGBB 十六进制格式
   if (val.size() == 7 && val[0] == '#')
@@ -525,10 +656,10 @@ sf::Color parse_css_color(const std::string& val)
     return sf::Color(r, g, b);
   }
 
-  return sf::Color::White;  // 默认
+  return sf::Color::White; // 默认
 }
 // 解析 CSS 文本并填充 styleSheet
-void parse_css_style(const std::string& cssText)
+void parse_css_style(const std::string &cssText)
 {
   std::regex blockRegex(R"(([^\{]+)\{([^}]+)\})");
   std::regex propRegex(R"(([^:]+):([^;]+);?)");

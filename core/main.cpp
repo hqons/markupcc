@@ -90,6 +90,7 @@ int main() {
                 window.close();
         }
         rootdiv.handleEvent(event, window);
+        rootdiv.handleScrollEvent(event, window);
 
         window.clear(sf::Color::White);
         rootdiv.draw(window);
