@@ -1,6 +1,13 @@
 #include "include/div.h"
 #include "include/font.h"
-
+std::unordered_map<std::string, Style> styleSheet;
+ int windowWidth;
+ int windowHeight;
+ float scrollOffset = 0.f;
+ float maxScrollOffset = 0.f;
+ const float SCROLL_SPEED = 1.2f;
+ bool isScrolling = false;
+sf::RectangleShape scrollBar;
 /*start*/
 
 /*back_start*/

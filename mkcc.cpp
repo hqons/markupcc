@@ -211,12 +211,16 @@ int make(){
     std::string output_binary = PATH(build, "build.out");  // 可执行文件名
 
     std::ostringstream cmd;
-    cmd << "g++ " << output_cpp_path << " -std=c++17 -o " << output_binary
-        << " -lsfml-graphics -lsfml-window -lsfml-system";
+    cmd << "g++ " << output_cpp_path
+    << " " << PATH(build, "include/element.cpp")
+    << " -std=c++17 -o " << output_binary
+    << " -lsfml-graphics -lsfml-window -lsfml-system";
+
 
     int result = std::system(cmd.str().c_str());
     if (result != 0)
     {
+      
       std::cerr << "[mkcc] Compilation failed with code: " << result << "\n";
       return result;
     }
