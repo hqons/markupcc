@@ -208,6 +208,7 @@ int make(){
     copy_directory_safe(ppath(PATH("mkcc_resource", "include")),
                         PATH(build, "include"));
     compile(root, output_cpp_path);
+    std::cout<<"[mkcc] Compiling...\n";
     std::string output_binary = PATH(build, "build.out");  // 可执行文件名
 
     std::ostringstream cmd;
@@ -224,11 +225,6 @@ int make(){
     std::cout << "[mkcc] Build complete: " << output_binary << "\n";
     return 0;
 }
-std::string get_program_dir(const char* argv0)
-{
-  std::filesystem::path exec_path = std::filesystem::absolute(argv0);
-  return exec_path.parent_path().string();
-}
 
 int main(int argc, char* argv[])
 {
@@ -237,8 +233,10 @@ int main(int argc, char* argv[])
     show_help();
     return 0;
   }
-#ifdef __linux__
-  program_dir = "/usr/bin";
+#ifdef _WIN32
+std::string program_dir = "C:\\Program Files\\mkcc";
+#else
+std::string program_dir = "/usr/share/mkcc";
 #endif
 
   std::string command = argv[1];
@@ -250,6 +248,11 @@ int main(int argc, char* argv[])
     init();
     std::cout << "[mkcc] Initialization successful" << std::endl;
   }
+  else if (command == "--version")
+  {
+    std::cout << "mkcc version 1.0.0 (markupcc compiler)\n";
+  }
+
   else if (command == "make")
   {
     return make();
@@ -294,7 +297,37 @@ int main(int argc, char* argv[])
 
   else if (command == "release")
   {
+    std::ifstream json_file("mkccmake.json");
+    if (!json_file)
+    {
+      std::cerr << "[mkcc] Error: mkccmake.json not found.\n";
+      return 1;
+    }
+
+    json config;
+    try
+    {
+      json_file >> config;
+    }
+    catch (const std::exception& e)
+    {
+      std::cerr << "[mkcc] JSON parsing error: " << e.what() << "\n";
+      return 1;
+    }
+
+    std::string build = conversion_path(config.value("output", "build"));
+    std::string binary_path = PATH(build, "build.out");
     std::cout << "[mkcc] Packaging for release..." << std::endl;
+    int code=make();
+      if (code!=0){
+        return code;
+      }
+    std::string suffix="";
+    #ifdef _WIN32
+    suffix=".exe";
+    #endif
+    copy_file_safe(binary_path,"release"+suffix);
+    
   }
   else if (command == "help" || command == "--help" || command == "-h")
   {

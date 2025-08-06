@@ -362,5 +362,5 @@ void compile(mkml_node& mkml, const std::string& maincpp_path) {
     infile.close();
 
     write_file(maincpp_path, new_main.str());
-    std::cout << "[mkcc] Injected macros into " << maincpp_path << "\n";
+    std::cout << "[mkcc] File generated " << maincpp_path << "\n";
 }
