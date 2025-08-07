@@ -234,9 +234,9 @@ int main(int argc, char* argv[])
     return 0;
   }
 #ifdef _WIN32
-std::string program_dir = "C:\\Program Files\\mkcc";
+program_dir = "C:\\Program Files\\mkcc";
 #else
-std::string program_dir = "/usr/bin/";
+program_dir = "/usr/bin";
 #endif
 
   std::string command = argv[1];
